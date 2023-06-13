@@ -1,3 +1,26 @@
+// Documentation of Books API
+//
+//		   Simple Gin API
+//
+//	    Schemes: http
+//	    BasePath: /v1
+//	    Version: 1.0.0
+//	    Contact: Test User <some_email@example.com> http://github.com/
+//
+//	    Consumes:
+//	    - application/json
+//
+//	    Produces:
+//	    - application/json
+//
+//	    Security:
+//	    - basic
+//
+//	   SecurityDefinitions:
+//	   basic:
+//	     type: basic
+//
+// swagger:meta
 package main
 
 import (
