@@ -5,6 +5,8 @@ import (
 
 	"github.com/katelynn620/gin-restful/pkg/api"
 	"github.com/katelynn620/gin-restful/pkg/config"
+	"github.com/katelynn620/gin-restful/pkg/util"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -12,11 +14,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("port: %v\n", c.Port)
-	fmt.Printf("db_url: %v\n", c.DBUrl)
+	util.InitLogger(c.Debug)
+	logger := zap.L().Sugar()
+	defer logger.Sync()
 
 	r := api.Init()
 
 	port := fmt.Sprintf(":%v", c.Port)
+	logger.Info("Server is running on port", port)
 	r.Run(port)
 }

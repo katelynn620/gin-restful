@@ -1,11 +1,14 @@
 package api
 
 import (
-	"log"
+	"time"
 
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/katelynn620/gin-restful/pkg/config"
-	"github.com/katelynn620/gin-restful/pkg/db"
+	database "github.com/katelynn620/gin-restful/pkg/db"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -14,20 +17,35 @@ type handler struct {
 }
 
 func Init() (r *gin.Engine) {
-	c, err := config.LoadConfig()
+	logger := zap.L().Sugar()
+	defer logger.Sync()
+
+	_ = config.GetConfig()
+
+	dbm, err := database.InitDatabaseManager()
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		logger.Fatalf("Error: %v", err)
 	}
 
-	dbHandler, err := db.InitDB(c.DBUrl)
+	dbm.Migrate()
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		logger.Fatalf("Error: %v", err)
 	}
+
 	h := handler{
-		DB: dbHandler,
+		DB: dbm.DB,
 	}
 
+	debug := viper.GetBool("debug")
+	logger.Debugf("Debug mode :%b", debug)
+	if !debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r = gin.Default()
+	r.Use(ginzap.Ginzap(zap.L(), time.RFC3339, true))
+	r.Use(ginzap.RecoveryWithZap(zap.L(), true))
+
+	r.SetTrustedProxies(nil)
 
 	r.GET("/healthz", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{"status": "ok"})

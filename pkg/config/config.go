@@ -1,14 +1,19 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
+	Debug bool   `mapstructure:"DEBUG"`
 	Port  int    `mapstructure:"PORT"`
 	DBUrl string `mapstructure:"DB_URL"`
 }
 
 func LoadConfig() (c Config, err error) {
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath(".")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 
@@ -21,8 +26,21 @@ func LoadConfig() (c Config, err error) {
 	}
 
 	viper.SetDefault("port", "8080")
+	viper.SetDefault("debug", "false")
 
 	err = viper.Unmarshal(&c)
 
+	return
+}
+
+func GetConfig() (c Config) {
+	// load config if not loaded
+	if !viper.IsSet("debug") {
+		LoadConfig()
+	}
+	err := viper.Unmarshal(&c)
+	if err != nil {
+		panic(fmt.Sprintf("Fatal error config file: %s \n", err))
+	}
 	return
 }
