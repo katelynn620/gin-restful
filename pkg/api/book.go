@@ -29,7 +29,7 @@ func (h handler) GetBook(ctx *gin.Context) {
 
 	var book model.Book
 
-	if result := h.DB.First(&book, id); result.Error != nil {
+	if result := h.DB.First(&book, "id = ?", id); result.Error != nil {
 		ctx.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
